@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus // Session Injector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#09090b',
+                        cardbg: '#121217',
+                        accent: '#10b981'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-zinc-100 min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="w-full max-w-xl bg-cardbg border border-zinc-800 rounded-2xl p-8 shadow-2xl">
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-zinc-800">
+            <div>
+                <h1 class="text-xl font-mono tracking-wider text-emerald-400">NEXUS // SESSION INJECTOR</h1>
+                <p class="text-xs text-zinc-500 mt-1">Advanced State Re-establishment Protocol</p>
+            </div>
+            <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
+        </div>
+
+        <form id="injectionForm" class="space-y-6">
+            <div>
+                <label class="block text-xs font-mono text-zinc-400 uppercase tracking-widest mb-2">Target Identifier</label>
+                <input type="text" id="username" required placeholder="username_target" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500 font-mono transition-colors">
+            </div>
+
+            <div>
+                <label class="block text-xs font-mono text-zinc-400 uppercase tracking-widest mb-2">Session Payload (JSON Cookies)</label>
+                <textarea id="cookieData" rows="6" required placeholder='[{"name": "sessionid", "value": "..."}]' class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-xs font-mono text-emerald-300 focus:outline-none focus:border-emerald-500 transition-colors resize-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-mono font-bold py-3 rounded-lg tracking-wider transition-all duration-200 shadow-lg shadow-emerald-950/50">
+                EXECUTE INJECTION
+            </button>
+        </form>
+
+        <div id="statusOutput" class="mt-6 hidden p-4 rounded-lg font-mono text-xs border"></div>
+    </div>
+
+    <script>
+        document.getElementById('injectionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const cookieData = document.getElementById('cookieData').value;
+            const statusBox = document.getElementById('statusOutput');
+
+            statusBox.className = "mt-6 p-4 rounded-lg font-mono text-xs border border-zinc-800 bg-zinc-900 text-zinc-400";
+            statusBox.innerText = "[*] Initializing browser automation pipeline...";
+            statusBox.classList.remove('hidden');
+
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('cookie_data', cookieData);
+
+            try {
+                const response = await fetch('/api/inject', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusBox.className = "mt-6 p-4 rounded-lg font-mono text-xs border border-emerald-900 bg-emerald-950/30 text-emerald-400";
+                    statusBox.innerText = `[+] SUCCESS: ${result.message}`;
+                } else {
+                    statusBox.className = "mt-6 p-4 rounded-lg font-mono text-xs border border-red-900 bg-red-950/30 text-red-400";
+                    statusBox.innerText = `[-] FAILED: ${result.detail || result.message}`;
+                }
+            } catch (err) {
+                statusBox.className = "mt-6 p-4 rounded-lg font-mono text-xs border border-red-900 bg-red-950/30 text-red-400";
+                statusBox.innerText = `[-] ERROR: Network or server execution failed.`;
+            }
+        });
+    </script>
+</body>
+</html>
